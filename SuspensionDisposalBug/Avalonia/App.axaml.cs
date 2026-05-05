@@ -78,8 +78,8 @@ namespace SuspensionDisposalBug.Avalonia
 			/* When the AutoSuspendHelper instance is disposed of here, a runtime exception occurs,
 			 * and an 'app-state.json' file fails to generate. */
 
-			_suspension?.Dispose();
-			_suspensionHostDisposable?.Dispose();
+			//_suspension?.Dispose();
+			//_suspensionHostDisposable?.Dispose();
 
 			// "Exception thrown: 'System.ObjectDisposedException' in System.Reactive.dll"
 		}

@@ -35,16 +35,6 @@ namespace SuspensionDisposalBug.Avalonia
 
 							locator.Register<ISuspensionDriver>(() =>
 								new SuspensionService(appStateFilepath));
-
-							locator.Register<AppModel>(() =>
-							{
-								ISuspensionHost<AppModel> suspensionHost =
-									RxSuspension.SuspensionHost as ISuspensionHost<AppModel>
-									?? throw new InvalidOperationException();
-
-								return suspensionHost.GetAppState();
-							});
-
 						})
 						.WithSuspensionHost<AppModel>();
 				});
