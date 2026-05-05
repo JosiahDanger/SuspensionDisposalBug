@@ -30,11 +30,11 @@ namespace SuspensionDisposalBug.Avalonia
 						.WithAvalonia()
 						.WithRegistration(locator =>
 						{
-							string widgetConfigurationFilepath =
+							string appStateFilepath =
 								Path.Combine(AppContext.BaseDirectory, "app-state.json");
 
 							locator.Register<ISuspensionDriver>(() =>
-								new SuspensionService(widgetConfigurationFilepath));
+								new SuspensionService(appStateFilepath));
 
 							locator.Register<AppModel>(() =>
 							{
