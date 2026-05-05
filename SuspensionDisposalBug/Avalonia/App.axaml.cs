@@ -19,16 +19,20 @@ namespace SuspensionDisposalBug.Avalonia
 		{
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
-				_suspension = new AutoSuspendHelper(desktop);
+				#pragma warning disable IDISP003
 
-				_shutdownEventSubscription =
-					Observable.FromEventPattern<ShutdownRequestedEventArgs>(
-									handler => desktop.ShutdownRequested += handler,
-									handler => desktop.ShutdownRequested -= handler)
-							  .Subscribe(_ => Dispose());
+					_suspension = new AutoSuspendHelper(desktop);
 
-				/* Both '_suspension' and '_shutdownEventSubscription' are disposed of during
-				 * app shutdown. */
+					_shutdownEventSubscription =
+						Observable.FromEventPattern<ShutdownRequestedEventArgs>(
+										handler => desktop.ShutdownRequested += handler,
+										handler => desktop.ShutdownRequested -= handler)
+								  .Subscribe(_ => Dispose());
+
+					/* Both '_suspension' and '_shutdownEventSubscription' are disposed of during
+					 * app shutdown. */
+
+				#pragma warning restore IDISP003
 
 				_suspension.OnFrameworkInitializationCompleted();
 
@@ -37,10 +41,14 @@ namespace SuspensionDisposalBug.Avalonia
 
 				if (suspensionHost is not null)
 				{
-					/* _suspensionHostDisposable is assigned only once during app
-					 * initialisation, so there is no previous value to dispose of. */
+					#pragma warning disable IDISP003
 
-					_suspensionHostDisposable = ConfigureSuspensionHost(suspensionHost);
+						/* _suspensionHostDisposable is assigned only once during app
+							* initialisation, so there is no previous value to dispose of. */
+
+						_suspensionHostDisposable = ConfigureSuspensionHost(suspensionHost);
+
+					#pragma warning restore IDISP003
 
 					desktop.MainWindow = new MainWindow();
 				}
