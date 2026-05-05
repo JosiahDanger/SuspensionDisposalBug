@@ -44,7 +44,7 @@ namespace SuspensionDisposalBug.Avalonia
 					#pragma warning disable IDISP003
 
 						/* _suspensionHostDisposable is assigned only once during app
-							* initialisation, so there is no previous value to dispose of. */
+						 * initialisation, so there is no previous value to dispose of. */
 
 						_suspensionHostDisposable = ConfigureSuspensionHost(suspensionHost);
 
@@ -75,8 +75,13 @@ namespace SuspensionDisposalBug.Avalonia
 		{
 			_shutdownEventSubscription?.Dispose();
 
-			_suspension?.Dispose(); // "Exception thrown: 'System.ObjectDisposedException' in System.Reactive.dll"
+			/* When the AutoSuspendHelper instance is disposed of here, a runtime exception occurs,
+			 * and an 'app-state.json' file fails to generate. */
+
+			_suspension?.Dispose();
 			_suspensionHostDisposable?.Dispose();
+
+			// "Exception thrown: 'System.ObjectDisposedException' in System.Reactive.dll"
 		}
 	}
 }
