@@ -1,0 +1,74 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using ReactiveUI;
+using ReactiveUI.Avalonia;
+using ReactiveUI.Interfaces;
+using SuspensionDisposalBug.Models;
+using System;
+using System.Reactive.Linq;
+using System.Text.Json.Serialization.Metadata;
+
+namespace SuspensionDisposalBug.Avalonia
+{
+	internal sealed partial class App : Application, IDisposable
+	{
+		private IDisposable? _suspensionHostDisposable, _shutdownEventSubscription;
+		private AutoSuspendHelper? _suspension;
+
+		public override void OnFrameworkInitializationCompleted()
+		{
+			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				_suspension = new AutoSuspendHelper(desktop);
+
+				_shutdownEventSubscription =
+					Observable.FromEventPattern<ShutdownRequestedEventArgs>(
+									handler => desktop.ShutdownRequested += handler,
+									handler => desktop.ShutdownRequested -= handler)
+							  .Subscribe(_ => Dispose());
+
+				/* Both '_suspension' and '_shutdownEventSubscription' are disposed of during
+				 * app shutdown. */
+
+				_suspension.OnFrameworkInitializationCompleted();
+
+				ISuspensionHost<AppModel>? suspensionHost =
+					RxSuspension.SuspensionHost as ISuspensionHost<AppModel>;
+
+				if (suspensionHost is not null)
+				{
+					/* _suspensionHostDisposable is assigned only once during app
+					 * initialisation, so there is no previous value to dispose of. */
+
+					_suspensionHostDisposable = ConfigureSuspensionHost(suspensionHost);
+
+					desktop.MainWindow = new MainWindow();
+				}
+			}
+
+			base.OnFrameworkInitializationCompleted();
+		}
+
+		private static IDisposable ConfigureSuspensionHost(
+			ISuspensionHost<AppModel> suspensionHost)
+		{
+			suspensionHost.CreateNewAppStateTyped = () =>
+			{
+				return new AppModel();
+			};
+
+			JsonTypeInfo<AppModel> typeInfo =
+				AppModelSerialiserContext.Default.AppModel;
+
+			return suspensionHost.SetupDefaultSuspendResume(typeInfo);
+		}
+
+		public void Dispose()
+		{
+			_shutdownEventSubscription?.Dispose();
+
+			_suspension?.Dispose(); // "Exception thrown: 'System.ObjectDisposedException' in System.Reactive.dll"
+			_suspensionHostDisposable?.Dispose();
+		}
+	}
+}
